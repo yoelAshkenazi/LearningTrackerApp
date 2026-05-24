@@ -81,8 +81,8 @@ class StatisticsEngine:
         )
         fig.update_layout(title="Answered vs Unanswered Questions")
 
-        file_path = export_dir / "answered_distribution.png"
-        fig.write_image(str(file_path))
+        file_path = export_dir / "answered_distribution.html"
+        fig.write_html(str(file_path))
         self.logger.info(f"Exported: {file_path}")
 
     def _generate_timeline_chart(self, export_dir: Path) -> None:
@@ -115,8 +115,8 @@ class StatisticsEngine:
             yaxis_title="Count",
         )
 
-        file_path = export_dir / "timeline.png"
-        fig.write_image(str(file_path))
+        file_path = export_dir / "timeline.html"
+        fig.write_html(str(file_path))
         self.logger.info(f"Exported: {file_path}")
 
     def _generate_connectivity_chart(self, export_dir: Path) -> None:
@@ -167,6 +167,6 @@ class StatisticsEngine:
             yaxis_title="Degree",
         )
 
-        file_path = export_dir / "connectivity.png"
-        fig.write_image(str(file_path))
+        file_path = export_dir / "connectivity.html"
+        fig.write_html(str(file_path))
         self.logger.info(f"Exported: {file_path}")

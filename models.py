@@ -33,6 +33,7 @@ class QuestionNode:
     is_answered: bool = False
     x: float = 100.0
     y: float = 100.0
+    snapshot: int = 1
 
     def to_dict(self) -> Dict:
         """
@@ -49,6 +50,7 @@ class QuestionNode:
             "is_answered": self.is_answered,
             "x": self.x,
             "y": self.y,
+            "snapshot": self.snapshot,
         }
 
     @staticmethod
@@ -76,6 +78,7 @@ class QuestionNode:
             is_answered=data.get("is_answered", False),
             x=data.get("x", 100.0),
             y=data.get("y", 100.0),
+            snapshot=data.get("snapshot", 1),
         )
 
 
@@ -86,11 +89,13 @@ class LearningGraph:
 
     Attributes:
         graph_created_at (datetime): When the graph was created.
+        snapshot_counter (int): Current snapshot count.
         nodes (Dict[str, QuestionNode]): Dictionary of all nodes keyed by node_id.
         edges (List[tuple]): List of directed edges as (source_id, target_id) tuples.
     """
 
     graph_created_at: datetime
+    snapshot_counter: int = 1
     nodes: Dict[str, QuestionNode] = field(default_factory=dict)
     edges: List[tuple] = field(default_factory=list)
 
@@ -175,6 +180,7 @@ class LearningGraph:
         """
         return {
             "graph_created_at": self.graph_created_at.isoformat(),
+            "snapshot_counter": self.snapshot_counter,
             "nodes": {
                 node_id: node.to_dict() for node_id, node in self.nodes.items()
             },
@@ -195,7 +201,8 @@ class LearningGraph:
             LearningGraph: Reconstructed graph instance.
         """
         graph = LearningGraph(
-            graph_created_at=datetime.fromisoformat(data["graph_created_at"])
+            graph_created_at=datetime.fromisoformat(data["graph_created_at"]),
+            snapshot_counter=data.get("snapshot_counter", 1),
         )
 
         for node_id, node_data in data.get("nodes", {}).items():

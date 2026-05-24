@@ -94,13 +94,16 @@ class StorageManager:
 
         if not path.exists():
             self.logger.info(f"No graph file found at {path}. Creating new graph.")
-            return LearningGraph(graph_created_at=datetime.now())
+            return LearningGraph(graph_created_at=datetime.now(), snapshot_counter=1)
 
         try:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             graph = LearningGraph.from_dict(data)
-            self.logger.info(f"Graph loaded from {path}")
+            graph.snapshot_counter += 1
+            self.logger.info(f"Graph loaded from {path}. Snapshot counter incremented to {graph.snapshot_counter}")
+            # Persist the incremented snapshot counter
+            self.save_graph(graph, path)
             return graph
         except Exception as e:
             self.logger.error(f"Failed to load graph: {e}")

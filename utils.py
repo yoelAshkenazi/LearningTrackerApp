@@ -24,9 +24,9 @@ def generate_node_id() -> str:
 
 def get_node_color(node: QuestionNode, graph: LearningGraph) -> str:
     """
-    Dynamically calculate node color based on its upload date relative to the graph timeline.
+    Dynamically calculate node color based on its snapshot relative to the graph's snapshot range.
 
-    Divides the timeline into 5 equal bins and assigns colors:
+    Divides the snapshot range [1, graph.snapshot_counter] into 5 equal bins and assigns colors:
     - Bin 0: #FFB3BA (light red)
     - Bin 1: #FFCCCB (light pink)
     - Bin 2: #FFFFBA (light yellow)
@@ -35,22 +35,22 @@ def get_node_color(node: QuestionNode, graph: LearningGraph) -> str:
 
     Args:
         node (QuestionNode): The node to color.
-        graph (LearningGraph): The graph for timeline context.
+        graph (LearningGraph): The graph for snapshot context.
 
     Returns:
         str: A hex color code.
     """
     colors = ["#FFB3BA", "#FFCCCB", "#FFFFBA", "#BAE1BA", "#BAC2FF"]
 
-    t_min = graph.graph_created_at
-    t_max = datetime.now()
+    s_min = 1
+    s_max = graph.snapshot_counter
 
-    total_span = (t_max - t_min).total_seconds()
-    if total_span == 0:
+    if s_max <= s_min:
         return colors[0]
 
-    node_span = (node.upload_date - t_min).total_seconds()
-    bin_index = min(4, int((node_span / total_span) * 5))
+    # Normalize snapshot to [0, 1] range
+    val = (node.snapshot - s_min) / (s_max - s_min)
+    bin_index = min(4, int(val * 5))
 
     return colors[max(0, bin_index)]
 
