@@ -38,7 +38,7 @@ class AddNodePopup:
 
         self.popup = tk.Toplevel(root)
         self.popup.title("Add New Node")
-        self.popup.geometry("500x300")
+        self.popup.geometry("500x420")
 
         self._setup_widgets()
 
@@ -53,6 +53,24 @@ class AddNodePopup:
         tk.Label(self.popup, text="Answer (optional):").pack(padx=10, pady=(10, 0), anchor=tk.W)
         self.answer_text = tk.Text(self.popup, height=5, width=50)
         self.answer_text.pack(padx=10, pady=5)
+
+        # Difficulty
+        diff_frame = tk.Frame(self.popup)
+        diff_frame.pack(padx=10, pady=5, fill=tk.X)
+        tk.Label(diff_frame, text="Difficulty:").pack(side=tk.LEFT, anchor=tk.NW, padx=(0, 5))
+
+        self.diff_options = ["easy", "medium", "hard", "challenging", "extreme"]
+        self.diff_listbox = tk.Listbox(diff_frame, height=3, exportselection=False)
+        scrollbar = ttk.Scrollbar(diff_frame, orient=tk.VERTICAL, command=self.diff_listbox.yview)
+        self.diff_listbox.configure(yscrollcommand=scrollbar.set)
+
+        for opt in self.diff_options:
+            self.diff_listbox.insert(tk.END, opt.capitalize())
+
+        self.diff_listbox.selection_set(0)  # Default to Easy
+
+        self.diff_listbox.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        scrollbar.pack(side=tk.LEFT, fill=tk.Y)
 
         # Buttons
         button_frame = tk.Frame(self.popup)
@@ -70,7 +88,10 @@ class AddNodePopup:
             tk.messagebox.showerror("Error", "Question cannot be empty.")
             return
 
-        self.on_create(self.node_id, question, answer)
+        selected_idx = self.diff_listbox.curselection()
+        difficulty = self.diff_options[selected_idx[0]] if selected_idx else "easy"
+
+        self.on_create(self.node_id, question, answer, difficulty)
         self.popup.destroy()
 
 
@@ -108,7 +129,7 @@ class EditNodePopup:
 
         self.popup = tk.Toplevel(root)
         self.popup.title(f"Edit Node: {node.node_id}")
-        self.popup.geometry("600x500")
+        self.popup.geometry("600x600")
 
         self._setup_widgets()
 
@@ -144,6 +165,27 @@ class EditNodePopup:
         self.answer_text.pack(padx=10, pady=5)
         self.answer_text.insert("1.0", self.node.answer)
 
+        # Difficulty
+        diff_frame = tk.Frame(self.popup)
+        diff_frame.pack(padx=10, pady=5, fill=tk.X)
+        tk.Label(diff_frame, text="Difficulty:").pack(side=tk.LEFT, anchor=tk.NW, padx=(0, 5))
+
+        self.diff_options = ["easy", "medium", "hard", "challenging", "extreme"]
+        self.diff_listbox = tk.Listbox(diff_frame, height=3, exportselection=False)
+        scrollbar = ttk.Scrollbar(diff_frame, orient=tk.VERTICAL, command=self.diff_listbox.yview)
+        self.diff_listbox.configure(yscrollcommand=scrollbar.set)
+
+        for opt in self.diff_options:
+            self.diff_listbox.insert(tk.END, opt.capitalize())
+
+        curr_diff = getattr(self.node, "difficulty", "easy").lower()
+        default_idx = self.diff_options.index(curr_diff) if curr_diff in self.diff_options else 0
+        self.diff_listbox.selection_set(default_idx)
+        self.diff_listbox.see(default_idx)
+
+        self.diff_listbox.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        scrollbar.pack(side=tk.LEFT, fill=tk.Y)
+
         # Is Answered checkbox
         self.is_answered_var = tk.BooleanVar(value=self.node.is_answered)
         tk.Checkbutton(self.popup, text="Mark as Answered", variable=self.is_answered_var).pack(
@@ -170,7 +212,10 @@ class EditNodePopup:
             tk.messagebox.showerror("Error", "Question cannot be empty.")
             return
 
-        self.on_save(self.node.node_id, question, answer, is_answered)
+        selected_idx = self.diff_listbox.curselection()
+        difficulty = self.diff_options[selected_idx[0]] if selected_idx else "easy"
+
+        self.on_save(self.node.node_id, question, answer, is_answered, difficulty)
         self.popup.destroy()
 
     def _delete(self) -> None:

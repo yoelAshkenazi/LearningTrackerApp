@@ -7,6 +7,7 @@ click selection, and edge creation capabilities.
 
 import logging
 import tkinter as tk
+import math
 from typing import Callable, Optional
 
 from models import LearningGraph
@@ -113,7 +114,7 @@ class GraphCanvas(tk.Frame):
 
     def _draw_node(self, node_id: str, x: float, y: float) -> None:
         """
-        Draw a single node as a rounded circle.
+        Draw a single node based on its difficulty shape.
 
         Args:
             node_id (str): The node ID.
@@ -128,16 +129,85 @@ class GraphCanvas(tk.Frame):
         outline_width = 3 if node.is_answered else 2
 
         radius = 20
-        item_id = self.canvas.create_oval(
-            x - radius,
-            y - radius,
-            x + radius,
-            y + radius,
-            fill=color,
-            outline=outline_color,
-            width=outline_width,
-            tags=node_id,
-        )
+        difficulty = getattr(node, "difficulty", "easy").lower()
+
+        if difficulty == "easy":
+            item_id = self.canvas.create_oval(
+                x - radius,
+                y - radius,
+                x + radius,
+                y + radius,
+                fill=color,
+                outline=outline_color,
+                width=outline_width,
+                tags=node_id,
+            )
+        elif difficulty == "medium":
+            item_id = self.canvas.create_rectangle(
+                x - radius,
+                y - radius,
+                x + radius,
+                y + radius,
+                fill=color,
+                outline=outline_color,
+                width=outline_width,
+                tags=node_id,
+            )
+        elif difficulty == "hard":
+            p1 = (x, y - radius)
+            p2 = (x + radius * math.cos(math.radians(30)), y + radius * math.sin(math.radians(30)))
+            p3 = (x - radius * math.cos(math.radians(30)), y + radius * math.sin(math.radians(30)))
+            item_id = self.canvas.create_polygon(
+                p1[0], p1[1],
+                p2[0], p2[1],
+                p3[0], p3[1],
+                fill=color,
+                outline=outline_color,
+                width=outline_width,
+                tags=node_id,
+            )
+        elif difficulty == "challenging":
+            p1 = (x, y - radius)
+            p2 = (x + radius, y)
+            p3 = (x, y + radius)
+            p4 = (x - radius, y)
+            item_id = self.canvas.create_polygon(
+                p1[0], p1[1],
+                p2[0], p2[1],
+                p3[0], p3[1],
+                p4[0], p4[1],
+                fill=color,
+                outline=outline_color,
+                width=outline_width,
+                tags=node_id,
+            )
+        elif difficulty == "extreme":
+            points = []
+            r_outer = radius
+            r_inner = radius * 0.4
+            for i in range(10):
+                angle = math.radians(i * 36 - 90)
+                r = r_outer if i % 2 == 0 else r_inner
+                points.append(x + r * math.cos(angle))
+                points.append(y + r * math.sin(angle))
+            item_id = self.canvas.create_polygon(
+                *points,
+                fill=color,
+                outline=outline_color,
+                width=outline_width,
+                tags=node_id,
+            )
+        else:
+            item_id = self.canvas.create_oval(
+                x - radius,
+                y - radius,
+                x + radius,
+                y + radius,
+                fill=color,
+                outline=outline_color,
+                width=outline_width,
+                tags=node_id,
+            )
 
         self.node_items[node_id] = item_id
         self.node_positions[node_id] = (x, y)
@@ -156,7 +226,7 @@ class GraphCanvas(tk.Frame):
 
     def _draw_edge(self, source_id: str, target_id: str) -> None:
         """
-        Draw a directed edge between two nodes.
+        Draw a directed edge between two nodes, stopping at their boundaries.
 
         Args:
             source_id (str): Source node ID.
@@ -167,11 +237,22 @@ class GraphCanvas(tk.Frame):
 
         if source_node and target_node:
             edge_tag = f"edge_{source_id}_{target_id}"
+            dx = target_node.x - source_node.x
+            dy = target_node.y - source_node.y
+            dist = math.hypot(dx, dy)
+            if dist > 40:
+                ux, uy = dx / dist, dy / dist
+                sx, sy = source_node.x + 20 * ux, source_node.y + 20 * uy
+                ex, ey = target_node.x - 20 * ux, target_node.y - 20 * uy
+            else:
+                sx, sy = source_node.x, source_node.y
+                ex, ey = target_node.x, target_node.y
+
             self.canvas.create_line(
-                source_node.x,
-                source_node.y,
-                target_node.x,
-                target_node.y,
+                sx,
+                sy,
+                ex,
+                ey,
                 arrow=tk.LAST,
                 fill="gray",
                 width=2,
@@ -213,16 +294,54 @@ class GraphCanvas(tk.Frame):
             return
 
         radius = 20
-        # Update node oval coordinates
         item_id = self.node_items.get(node_id)
         if item_id:
-            self.canvas.coords(
-                item_id,
-                node.x - radius,
-                node.y - radius,
-                node.x + radius,
-                node.y + radius,
-            )
+            difficulty = getattr(node, "difficulty", "easy").lower()
+            if difficulty == "easy":
+                self.canvas.coords(
+                    item_id,
+                    node.x - radius,
+                    node.y - radius,
+                    node.x + radius,
+                    node.y + radius,
+                )
+            elif difficulty == "medium":
+                self.canvas.coords(
+                    item_id,
+                    node.x - radius,
+                    node.y - radius,
+                    node.x + radius,
+                    node.y + radius,
+                )
+            elif difficulty == "hard":
+                p1 = (node.x, node.y - radius)
+                p2 = (node.x + radius * math.cos(math.radians(30)), node.y + radius * math.sin(math.radians(30)))
+                p3 = (node.x - radius * math.cos(math.radians(30)), node.y + radius * math.sin(math.radians(30)))
+                self.canvas.coords(item_id, p1[0], p1[1], p2[0], p2[1], p3[0], p3[1])
+            elif difficulty == "challenging":
+                p1 = (node.x, node.y - radius)
+                p2 = (node.x + radius, node.y)
+                p3 = (node.x, node.y + radius)
+                p4 = (node.x - radius, node.y)
+                self.canvas.coords(item_id, p1[0], p1[1], p2[0], p2[1], p3[0], p3[1], p4[0], p4[1])
+            elif difficulty == "extreme":
+                points = []
+                r_outer = radius
+                r_inner = radius * 0.4
+                for i in range(10):
+                    angle = math.radians(i * 36 - 90)
+                    r = r_outer if i % 2 == 0 else r_inner
+                    points.append(node.x + r * math.cos(angle))
+                    points.append(node.y + r * math.sin(angle))
+                self.canvas.coords(item_id, *points)
+            else:
+                self.canvas.coords(
+                    item_id,
+                    node.x - radius,
+                    node.y - radius,
+                    node.x + radius,
+                    node.y + radius,
+                )
 
         # Update text label coordinates
         self.canvas.coords(f"label_{node_id}", node.x, node.y)
@@ -232,26 +351,52 @@ class GraphCanvas(tk.Frame):
             source_node = self.graph.nodes.get(source_id)
             if source_node:
                 edge_tag = f"edge_{source_id}_{node_id}"
-                self.canvas.coords(
-                    edge_tag,
-                    source_node.x,
-                    source_node.y,
-                    node.x,
-                    node.y,
-                )
+                dx = node.x - source_node.x
+                dy = node.y - source_node.y
+                dist = math.hypot(dx, dy)
+                if dist > 40:
+                    ux, uy = dx / dist, dy / dist
+                    self.canvas.coords(
+                        edge_tag,
+                        source_node.x + 20 * ux,
+                        source_node.y + 20 * uy,
+                        node.x - 20 * ux,
+                        node.y - 20 * uy,
+                    )
+                else:
+                    self.canvas.coords(
+                        edge_tag,
+                        source_node.x,
+                        source_node.y,
+                        node.x,
+                        node.y,
+                    )
 
         # Update outgoing edges
         for target_id in self.graph.get_outgoing_edges(node_id):
             target_node = self.graph.nodes.get(target_id)
             if target_node:
                 edge_tag = f"edge_{node_id}_{target_id}"
-                self.canvas.coords(
-                    edge_tag,
-                    node.x,
-                    node.y,
-                    target_node.x,
-                    target_node.y,
-                )
+                dx = target_node.x - node.x
+                dy = target_node.y - node.y
+                dist = math.hypot(dx, dy)
+                if dist > 40:
+                    ux, uy = dx / dist, dy / dist
+                    self.canvas.coords(
+                        edge_tag,
+                        node.x + 20 * ux,
+                        node.y + 20 * uy,
+                        target_node.x - 20 * ux,
+                        target_node.y - 20 * uy,
+                    )
+                else:
+                    self.canvas.coords(
+                        edge_tag,
+                        node.x,
+                        node.y,
+                        target_node.x,
+                        target_node.y,
+                    )
 
     def _on_canvas_click(self, event) -> None:
         """
@@ -324,9 +469,17 @@ class GraphCanvas(tk.Frame):
             source_node = self.graph.nodes.get(self.connecting_from_node)
             if source_node:
                 self.canvas.delete("temp_edge")
+                dx = event.x - source_node.x
+                dy = event.y - source_node.y
+                dist = math.hypot(dx, dy)
+                if dist > 20:
+                    ux, uy = dx / dist, dy / dist
+                    sx, sy = source_node.x + 20 * ux, source_node.y + 20 * uy
+                else:
+                    sx, sy = source_node.x, source_node.y
                 self.canvas.create_line(
-                    source_node.x,
-                    source_node.y,
+                    sx,
+                    sy,
                     event.x,
                     event.y,
                     arrow=tk.LAST,

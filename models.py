@@ -34,6 +34,7 @@ class QuestionNode:
     x: float = 100.0
     y: float = 100.0
     snapshot: int = 1
+    difficulty: str = "easy"
 
     def to_dict(self) -> Dict:
         """
@@ -51,6 +52,7 @@ class QuestionNode:
             "x": self.x,
             "y": self.y,
             "snapshot": self.snapshot,
+            "difficulty": self.difficulty,
         }
 
     @staticmethod
@@ -79,6 +81,7 @@ class QuestionNode:
             x=data.get("x", 100.0),
             y=data.get("y", 100.0),
             snapshot=data.get("snapshot", 1),
+            difficulty=data.get("difficulty", "easy"),
         )
 
 

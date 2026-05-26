@@ -247,7 +247,7 @@ class LearningTrackerApp:
         popup = AddNodePopup(
             self.root,
             node_id,
-            lambda nid, q, a: self._create_node(nid, q, a, x, y),
+            lambda nid, q, a, diff: self._create_node(nid, q, a, x, y, diff),
         )
 
     def _on_connect_create_request(self, source_id: str, x: float, y: float) -> None:
@@ -263,7 +263,7 @@ class LearningTrackerApp:
         popup = AddNodePopup(
             self.root,
             node_id,
-            lambda nid, q, a: self._create_connected_node(source_id, nid, q, a, x, y),
+            lambda nid, q, a, diff: self._create_connected_node(source_id, nid, q, a, x, y, diff),
         )
 
     def _create_node(
@@ -273,6 +273,7 @@ class LearningTrackerApp:
         answer: str = "",
         x: float = 100.0,
         y: float = 100.0,
+        difficulty: str = "easy",
     ) -> None:
         """
         Create a new node in the graph.
@@ -283,6 +284,7 @@ class LearningTrackerApp:
             answer (str): The answer text (optional).
             x (float): Canvas x-coordinate.
             y (float): Canvas y-coordinate.
+            difficulty (str): The difficulty level.
         """
         self._save_to_undo_stack()
         node = QuestionNode(
@@ -294,6 +296,7 @@ class LearningTrackerApp:
             x=x,
             y=y,
             snapshot=self.graph.snapshot_counter,
+            difficulty=difficulty,
         )
         self.graph.add_node(node)
         self.canvas.redraw()
@@ -307,6 +310,7 @@ class LearningTrackerApp:
         answer: str = "",
         x: float = 100.0,
         y: float = 100.0,
+        difficulty: str = "easy",
     ) -> None:
         """
         Create a new node and add an edge from a source node to it.
@@ -318,6 +322,7 @@ class LearningTrackerApp:
             answer (str): The answer text (optional).
             x (float): Canvas x-coordinate.
             y (float): Canvas y-coordinate.
+            difficulty (str): The difficulty level.
         """
         self._save_to_undo_stack()
         node = QuestionNode(
@@ -329,6 +334,7 @@ class LearningTrackerApp:
             x=x,
             y=y,
             snapshot=self.graph.snapshot_counter,
+            difficulty=difficulty,
         )
         self.graph.add_node(node)
         self.graph.add_edge(source_id, node_id)
@@ -354,7 +360,7 @@ class LearningTrackerApp:
             )
 
     def _update_node(
-        self, node_id: str, question: str, answer: str, is_answered: bool
+        self, node_id: str, question: str, answer: str, is_answered: bool, difficulty: str = "easy"
     ) -> None:
         """
         Update an existing node.
@@ -364,6 +370,7 @@ class LearningTrackerApp:
             question (str): Updated question text.
             answer (str): Updated answer text.
             is_answered (bool): Whether the node is answered.
+            difficulty (str): The difficulty level.
         """
         self._save_to_undo_stack()
         node = self.graph.nodes.get(node_id)
@@ -371,6 +378,7 @@ class LearningTrackerApp:
             node.question = question
             node.answer = answer
             node.is_answered = is_answered
+            node.difficulty = difficulty
             if is_answered and not node.answer_date:
                 node.answer_date = datetime.now()
             self.canvas.redraw()
