@@ -1,10 +1,13 @@
 data
 
+dist
+
 exports
+
+src/learning_tracker_app.egg-info
 
 test_exports
 
 test_exports_1d4df0ab
 
 learning_tracker.log
-

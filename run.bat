@@ -1,6 +1,7 @@
 @echo off
 REM Learning Progress Tracker - Windows Batch Runner
-REM Starts the Python application
+REM Starts the Python application in the local src layout
 
-python main.py
+set PYTHONPATH=src
+python -m learning_tracker.main
 pause
