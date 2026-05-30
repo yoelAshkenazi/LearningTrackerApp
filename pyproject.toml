@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "learning-tracker-app"
+version = "1.0.0"
+description = "A graphical tool to track, visualize, and analyze your learning progress."
+readme = "README.md"
+authors = [
+    { name = "Yoel Ashkenazi" }
+]
+requires-python = ">=3.8"
+license = "MIT"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Education",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+dependencies = []
+
+[project.optional-dependencies]
+stats = ["plotly>=5.0.0"]
+
+[project.urls]
+"Homepage" = "https://github.com/yoelAshkenazi/LearningTrackerApp"
+"Bug Tracker" = "https://github.com/yoelAshkenazi/LearningTrackerApp/issues"
+
+[project.scripts]
+learning-tracker = "learning_tracker.main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
